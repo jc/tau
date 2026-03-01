@@ -168,6 +168,12 @@ function handleRPCEvent(event) {
     case 'tool_execution_end':
       handleToolExecutionEnd(event);
       break;
+    case 'auto_compaction_start':
+      handleCompactionStart();
+      break;
+    case 'auto_compaction_end':
+      handleCompactionEnd(event);
+      break;
     case 'extension_ui_request':
       handleExtensionUIRequest(event);
       break;
@@ -175,6 +181,28 @@ function handleRPCEvent(event) {
       messageRenderer.renderError(`Extension error: ${event.error}`);
       break;
   }
+}
+
+function handleCompactionStart() {
+  const el = document.createElement('div');
+  el.className = 'system-message compaction-message';
+  el.id = 'compaction-indicator';
+  el.innerHTML = '<span class="compaction-spinner">⟳</span> Compacting context…';
+  messagesContainer.appendChild(el);
+  scrollToBottom();
+}
+
+function handleCompactionEnd(event) {
+  const indicator = document.getElementById('compaction-indicator');
+  if (indicator) {
+    const summary = event.summary ? ` — ${event.summary}` : '';
+    indicator.innerHTML = `✓ Context compacted${summary}`;
+    indicator.classList.add('compaction-done');
+  }
+  // Reset token tracking — next message will update
+  lastInputTokens = 0;
+  updateTokenUsage();
+  hideCompactButton();
 }
 
 function handleAgentStart() {
@@ -485,6 +513,7 @@ const commandPaletteOverlay = document.getElementById('command-palette-overlay')
 const commandList = document.getElementById('command-list');
 
 const commands = [
+  { icon: '🗜️', label: 'Compact', desc: 'Compact context to save tokens', action: () => rpcCommand({ type: 'compact' }, 'Compacting...') },
   { icon: '📋', label: 'Export HTML', desc: 'Export session as HTML file', action: () => rpcExportHtml() },
   { icon: '📊', label: 'Session Stats', desc: 'Show session statistics', action: () => showSessionStats() },
 ];
@@ -1015,12 +1044,37 @@ function updateTokenUsage() {
       tokenUsageEl.classList.add('warning');
     }
     tokenUsageEl.title = `Context: ${(lastInputTokens / 1000).toFixed(1)}k / ${(contextWindowSize / 1000).toFixed(0)}k tokens`;
+    if (pct >= 80) {
+      showCompactButton();
+    } else {
+      hideCompactButton();
+    }
   } else if (lastInputTokens > 0) {
     // No context window info yet, just show raw tokens
     tokenUsageEl.textContent = `${(lastInputTokens / 1000).toFixed(1)}k`;
     tokenUsageEl.classList.add('visible');
     tokenUsageEl.classList.remove('warning', 'critical');
   }
+}
+
+function showCompactButton() {
+  if (document.getElementById('compact-btn')) return;
+  const btn = document.createElement('button');
+  btn.id = 'compact-btn';
+  btn.className = 'compact-btn';
+  btn.textContent = 'Compact';
+  btn.title = 'Context is over 80% — compact to save tokens';
+  btn.addEventListener('click', () => {
+    rpcCommand({ type: 'compact' }, 'Compacting...');
+    hideCompactButton();
+  });
+  // Insert next to token usage in header
+  tokenUsageEl.parentElement.insertBefore(btn, tokenUsageEl.nextSibling);
+}
+
+function hideCompactButton() {
+  const btn = document.getElementById('compact-btn');
+  if (btn) btn.remove();
 }
 
 async function fetchContextWindow() {

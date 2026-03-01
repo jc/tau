@@ -589,6 +589,51 @@ body {
   animation: pulse 2s infinite;
 }
 
+/* Compact button — appears at 80% context */
+.compact-btn {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 10px;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  border-radius: var(--radius-pill);
+  color: var(--error);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--duration) var(--ease);
+  animation: fadeIn 0.3s var(--ease);
+  margin-left: 6px;
+}
+
+.compact-btn:hover {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+/* Compaction system messages */
+.compaction-message {
+  text-align: center;
+  padding: 12px;
+  font-size: 13px;
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+
+.compaction-spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+.compaction-done {
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Model button — prominent in header */
 .model-btn {
   background: var(--bg-glass-strong);
