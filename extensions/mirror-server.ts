@@ -73,6 +73,19 @@ export default function (pi: ExtensionAPI) {
   // ═══════════════════════════════════════
   // /qr command — show QR code to connect
   // ═══════════════════════════════════════
+  pi.registerCommand("tau", {
+    description: "Open Tau web UI in browser",
+    handler: async (_args, ctx) => {
+      if (!mirrorUrl) {
+        ctx.ui.notify("Mirror server not running yet", "warning");
+        return;
+      }
+      const { exec } = require("node:child_process");
+      exec(`open "${mirrorUrl}"`);
+      ctx.ui.notify(`Opened ${mirrorUrl}`, "info");
+    },
+  });
+
   pi.registerCommand("qr", {
     description: "Show QR code for Tau mirror URL",
     handler: async (_args, ctx) => {
