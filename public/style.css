@@ -38,10 +38,12 @@
   /* Tool accent — muted plum */
   --tool-accent: #6b4a6e;
   --tool-accent-text: #a07da4;
+  --tool-bg: rgba(107, 74, 110, 0.06);
 
   /* Thinking accent — soft blue */
   --thinking-accent: #4a6a8b;
   --thinking-accent-text: #7bafd4;
+  --thinking-bg: rgba(74, 106, 139, 0.06);
 
   /* Borders — silk edges */
   --border: rgba(255, 255, 255, 0.07);
@@ -105,10 +107,12 @@
   /* Tool accent — deep aubergine */
   --tool-accent: #5c2860;
   --tool-accent-text: #6b3570;
+  --tool-bg: rgba(92, 40, 96, 0.06);
 
   /* Thinking accent — soft blue */
   --thinking-accent: #3a6a9b;
   --thinking-accent-text: #4a80b0;
+  --thinking-bg: rgba(58, 106, 155, 0.06);
   --border: rgba(0, 0, 0, 0.06);
   --border-hover: rgba(0, 0, 0, 0.1);
   --border-bright: rgba(0, 0, 0, 0.15);
@@ -1274,7 +1278,7 @@ code {
    ═══════════════════════════════════════════════════════ */
 
 .thinking-block {
-  background: var(--bg-glass);
+  background: var(--thinking-bg);
   border: 1px solid var(--border);
   border-left: 2px solid var(--thinking-accent, #5b8cb8);
   padding: 0;
@@ -1347,7 +1351,7 @@ body.hide-thinking .thinking-block { display: none !important; }
    ═══════════════════════════════════════════════════════ */
 
 .tool-card {
-  background: var(--bg-glass);
+  background: var(--tool-bg);
   border: 1px solid var(--border);
   border-left: 2px solid var(--tool-accent);
   border-radius: var(--radius);
