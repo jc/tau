@@ -1,5 +1,15 @@
 # Tau
 
+> [!IMPORTANT]
+> This repository is a customized fork of [deflating/tau](https://github.com/deflating/tau).
+>
+> **What this fork adds**
+> - **Live-only session filter** in the sidebar, so you can quickly focus on sessions that are currently running
+> - **Quieter default logging**, with mirror debug output available only when `TAU_DEBUG=1`
+> - **More resilient port fallback**, with a wider auto-search range and configurable `TAU_MIRROR_MAX_PORT_ATTEMPTS`
+>
+> The rest of this README largely follows upstream so future syncs stay simple.
+
 A web UI that mirrors your [Pi](https://github.com/badlogic/pi-mono) terminal session in the browser. No separate server — it runs as a Pi extension inside your existing process.
 
 ![Tau dark mode](docs/images/dark.png)
