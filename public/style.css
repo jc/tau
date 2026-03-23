@@ -1689,13 +1689,24 @@ body {
 .message.assistant { align-self: flex-start; }
 .message-header { display: none; }
 
-.message-usage {
-  display: inline-block;
+.message-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 10px;
   color: var(--text-dim);
   font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
-  margin-top: 2px;
+  white-space: nowrap;
   opacity: 0.5;
+  padding-top: 4px;
+}
+
+.message-meta-separator {
+  opacity: 0.75;
+}
+
+.message-usage {
+  display: inline-block;
 }
 
 .message-content {

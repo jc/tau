@@ -300,12 +300,16 @@ function handleAgentEnd() {
 
 let currentStreamingThinking = '';
 
+function getMessageTimestamp(message, fallback = null) {
+  return message?.timestamp || fallback || null;
+}
+
 function handleMessageStart(message) {
   if (message.role === 'assistant') {
     currentStreamingText = '';
     currentStreamingThinking = '';
     currentStreamingElement = messageRenderer.renderAssistantMessage(
-      { content: '' },
+      { content: '', timestamp: getMessageTimestamp(message) },
       true
     );
   } else if (message.role === 'user') {
@@ -314,7 +318,7 @@ function handleMessageStart(message) {
     if (!lastSentMessage || getMessageText(message) !== lastSentMessage) {
       const content = getMessageText(message);
       if (content) {
-        messageRenderer.renderUserMessage({ content });
+        messageRenderer.renderUserMessage({ content, timestamp: getMessageTimestamp(message) });
       }
     }
     lastSentMessage = null;
@@ -353,7 +357,12 @@ function handleMessageEnd(message) {
     // Pass usage info for cost display
     const usage = message?.usage || null;
     // Pass thinking content so finalize can render the thinking block
-    messageRenderer.finalizeStreamingMessage(currentStreamingElement, usage, currentStreamingThinking);
+    messageRenderer.finalizeStreamingMessage(
+      currentStreamingElement,
+      usage,
+      currentStreamingThinking,
+      getMessageTimestamp(message)
+    );
     currentStreamingElement = null;
     currentStreamingThinking = '';
 
@@ -1256,6 +1265,7 @@ function renderSessionHistory(entries) {
 
     const msg = entry.message;
     if (!msg) continue;
+    const timestamp = getMessageTimestamp(msg, entry.timestamp);
 
     if (msg.role === 'user') {
       const content =
@@ -1273,7 +1283,7 @@ function renderSessionHistory(entries) {
         : [];
       if (content || images.length > 0) {
         userCount++;
-        messageRenderer.renderUserMessage({ content: content || '', images: images.length > 0 ? images : undefined }, true);
+        messageRenderer.renderUserMessage({ content: content || '', images: images.length > 0 ? images : undefined, timestamp }, true);
       }
     } else if (msg.role === 'assistant') {
       const textBlocks = (msg.content || []).filter((b) => b.type === 'text');
@@ -1296,6 +1306,7 @@ function renderSessionHistory(entries) {
           {
             content: contentBlocks.length > 0 ? contentBlocks : text,
             usage: msg.usage,
+            timestamp,
           },
           false,
           true

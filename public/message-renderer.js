@@ -53,8 +53,11 @@ export class MessageRenderer {
         '</div>';
     }
 
+    const metaHtml = this.renderMessageMeta(message.timestamp);
+
     div.innerHTML = `
       <div class="message-content">${imagesHtml}${renderUserMarkdown(message.content)}</div>
+      ${metaHtml}
       <button class="message-copy-btn" aria-label="Copy message"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
     `;
     this._setupCopyBtn(div);
@@ -72,7 +75,6 @@ export class MessageRenderer {
     div.dataset.messageId = message.id || 'streaming';
 
     let contentHtml = '';
-    let usageHtml = '';
 
     if (typeof message.content === 'string') {
       contentHtml = isStreaming ? this.escapeHtml(message.content) : renderMarkdown(message.content);
@@ -86,19 +88,12 @@ export class MessageRenderer {
       }
     }
 
-    // Usage/cost info
-    if (message.usage && message.usage.cost) {
-      const cost = message.usage.cost.total;
-      if (cost > 0) {
-        usageHtml = `<span class="message-usage">$${cost.toFixed(4)}</span>`;
-      }
-    }
-
+    const metaHtml = this.renderMessageMeta(message.timestamp, message.usage);
     const streamingClass = isStreaming ? ' streaming' : '';
 
     div.innerHTML = `
       <div class="message-content${streamingClass}">${contentHtml}</div>
-      ${usageHtml}
+      ${metaHtml}
       ${!isStreaming ? '<button class="message-copy-btn" aria-label="Copy message"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>' : ''}
     `;
 
@@ -164,7 +159,7 @@ export class MessageRenderer {
     }
   }
 
-  finalizeStreamingMessage(messageElement, usage = null, thinking = '') {
+  finalizeStreamingMessage(messageElement, usage = null, thinking = '', timestamp = null) {
     const contentDiv = messageElement.querySelector('.message-content');
     if (contentDiv) {
       contentDiv.classList.remove('streaming');
@@ -181,6 +176,16 @@ export class MessageRenderer {
       contentDiv.innerHTML = html;
     }
 
+    const metaHtml = this.renderMessageMeta(timestamp, usage);
+    const existingMeta = messageElement.querySelector('.message-meta');
+    if (metaHtml) {
+      if (existingMeta) {
+        existingMeta.outerHTML = metaHtml;
+      } else {
+        contentDiv?.insertAdjacentHTML('afterend', metaHtml);
+      }
+    }
+
     // Add copy button after streaming finishes
     if (!messageElement.querySelector('.message-copy-btn')) {
       const btn = document.createElement('button');
@@ -188,16 +193,6 @@ export class MessageRenderer {
       btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
       messageElement.appendChild(btn);
       this._setupCopyBtn(messageElement);
-    }
-
-    // Add usage info if available
-    if (usage && usage.cost && usage.cost.total > 0) {
-      if (!messageElement.querySelector('.message-usage')) {
-        const span = document.createElement('span');
-        span.className = 'message-usage';
-        span.textContent = `$${usage.cost.total.toFixed(4)}`;
-        messageElement.appendChild(span);
-      }
     }
   }
 
@@ -243,6 +238,52 @@ export class MessageRenderer {
         }, 1500);
       });
     });
+  }
+
+  renderMessageMeta(timestamp, usage = null) {
+    const time = this.formatMessageTime(timestamp);
+    const cost = usage?.cost?.total;
+    const hasCost = typeof cost === 'number' && cost > 0;
+
+    if (!time && !hasCost) return '';
+
+    return `
+      <div class="message-meta">
+        ${time ? `<span class="message-time">${this.escapeHtml(time)}</span>` : ''}
+        ${time && hasCost ? '<span class="message-meta-separator">·</span>' : ''}
+        ${hasCost ? `<span class="message-usage">$${cost.toFixed(4)}</span>` : ''}
+      </div>
+    `;
+  }
+
+  formatMessageTime(timestamp) {
+    const date = this.normalizeTimestamp(timestamp);
+    if (!date) return '';
+
+    const now = new Date();
+    const sameYear = date.getFullYear() === now.getFullYear();
+    const sameDay = sameYear && date.toDateString() === now.toDateString();
+
+    if (sameDay) {
+      return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    }
+
+    if (sameYear) {
+      return date.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+
+    return date.toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+
+  normalizeTimestamp(timestamp) {
+    if (!timestamp) return null;
+
+    const value = typeof timestamp === 'string' && /^\d+$/.test(timestamp)
+      ? Number(timestamp)
+      : timestamp;
+    const date = new Date(value);
+
+    return Number.isNaN(date.getTime()) ? null : date;
   }
 
   escapeHtml(text) {
