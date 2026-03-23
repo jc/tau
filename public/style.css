@@ -1749,6 +1749,31 @@ body {
   color: var(--text-primary);
 }
 
+.message.custom-message {
+  max-width: min(85%, 760px);
+}
+
+.message.custom-message .message-content {
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.message.custom-message .custom-message-label {
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
+  color: var(--accent-text);
+  letter-spacing: 0.02em;
+}
+
+.message.custom-message .custom-message-body {
+  color: var(--text-primary);
+}
+
 /* Markdown */
 .message.assistant .message-content p { margin-bottom: 8px; }
 .message.assistant .message-content p:last-child { margin-bottom: 0; }

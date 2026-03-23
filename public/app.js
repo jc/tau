@@ -1258,9 +1258,24 @@ function updateMirrorInputState() {
 
 function renderSessionHistory(entries) {
   console.log(`[History] Rendering ${entries.length} entries`);
-  let userCount = 0, assistantCount = 0, toolCardCount = 0, toolResultCount = 0;
+  let userCount = 0, assistantCount = 0, customCount = 0, toolCardCount = 0, toolResultCount = 0;
 
   for (const entry of entries) {
+    if (entry.type === 'custom_message') {
+      if (!entry.display) continue;
+
+      customCount++;
+      messageRenderer.renderCustomMessage(
+        {
+          customType: entry.customType,
+          content: entry.content,
+          timestamp: entry.timestamp,
+        },
+        true
+      );
+      continue;
+    }
+
     if (entry.type !== 'message') continue;
 
     const msg = entry.message;
@@ -1342,7 +1357,7 @@ function renderSessionHistory(entries) {
     }
   }
 
-  console.log(`[History] Done: ${userCount} users, ${assistantCount} assistants, ${toolCardCount} tools, ${toolResultCount} results`);
+  console.log(`[History] Done: ${userCount} users, ${assistantCount} assistants, ${customCount} custom, ${toolCardCount} tools, ${toolResultCount} results`);
   console.log(`[History] DOM tool-card count:`, document.querySelectorAll('.tool-card').length);
   console.log(`[History] DOM thinking-block count:`, document.querySelectorAll('.thinking-block').length);
 

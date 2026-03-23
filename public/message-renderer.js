@@ -104,6 +104,31 @@ export class MessageRenderer {
     return div;
   }
 
+  renderCustomMessage(message, isHistory = false) {
+    const welcome = this.container.querySelector('.welcome');
+    if (welcome) welcome.remove();
+
+    const div = document.createElement('div');
+    div.className = `message assistant custom-message${isHistory ? ' history' : ''}`;
+
+    const label = `[${message.customType || 'custom'}]`;
+    const body = this.getCustomMessageBody(message.content);
+    const metaHtml = this.renderMessageMeta(message.timestamp);
+
+    div.innerHTML = `
+      <div class="message-content">
+        <div class="custom-message-label">${this.escapeHtml(label)}</div>
+        <div class="custom-message-body">${renderMarkdown(body)}</div>
+      </div>
+      ${metaHtml}
+    `;
+
+    this.container.appendChild(div);
+    if (!isHistory) this.scrollToBottom();
+
+    return div;
+  }
+
   renderThinkingBlock(thinking) {
     const id = 'thinking-' + Math.random().toString(36).slice(2, 8);
     return `<div class="thinking-block">
@@ -113,6 +138,25 @@ export class MessageRenderer {
 </div>
 <div class="thinking-content" id="${id}">${this.escapeHtml(thinking)}</div>
 </div>`;
+  }
+
+  getCustomMessageBody(content) {
+    if (typeof content === 'string') return content;
+
+    if (Array.isArray(content)) {
+      const text = content
+        .filter((block) => block?.type === 'text' && typeof block.text === 'string')
+        .map((block) => block.text)
+        .join('\n');
+
+      if (text.trim()) return text;
+
+      const fallback = JSON.stringify(content, null, 2);
+      return fallback || '';
+    }
+
+    const fallback = JSON.stringify(content, null, 2);
+    return fallback || '';
   }
 
   updateStreamingThinking(messageElement, thinking) {
