@@ -5,6 +5,7 @@
 >
 > **What this fork adds**
 > - **Live-only session filter** in the sidebar, so you can quickly focus on sessions that are currently running
+> - **Historical custom Pi messages** now render in session history, including generic entries like answers and QR prompts
 > - **Quieter default logging**, with mirror debug output available only when `TAU_DEBUG=1`
 > - **More resilient port fallback**, with a wider auto-search range and configurable `TAU_MIRROR_MAX_PORT_ATTEMPTS`
 >
